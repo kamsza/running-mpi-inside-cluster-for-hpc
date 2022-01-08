@@ -56,8 +56,12 @@ void printResult(float **array, int rank,int size, int rowsCount, int colsCount)
 To use for performance tests
 Pretty prints out the time
 **/
-void printTime(int processesCount, int simulationLength, int matrixSize, double calculationTime, double communicationTime) {
+void printTime(int processesCount, int simulationLength, int matrixSize, double calculationTime, double communicationTime,bool verbose) {
+  if(verbose){
     printf("number of poceses: %d \t simulation length: %d \t matrix size: %d \t calculations time: %.6f \t communication time:  %.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime);
+  }else{
+    printf("%d\t%d\t%d\t%.6f\t%.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime);
+  }
 }
 
 /**
@@ -167,12 +171,12 @@ int main (int argc, char * argv[])
             MPI_Recv(&calculation_times[process_id], 1, MPI_DOUBLE, process_id, 11, MPI_COMM_WORLD, &gather_status);
             MPI_Recv(&communication_times[process_id], 1, MPI_DOUBLE, process_id, 22, MPI_COMM_WORLD, &gather_status);
         }
+        printTime(size, simulationLength, n, avg(calculation_times, size), avg(communication_times, size),false);
     } else {
         MPI_Send(&calculation_time, 1, MPI_DOUBLE, 0, 11, MPI_COMM_WORLD);
         MPI_Send(&communication_time, 1, MPI_DOUBLE, 0, 22, MPI_COMM_WORLD);
     }
 
-    printTime(size, simulationLength, n, avg(calculation_times, size), avg(communication_times, size));
 
     MPI_Finalize();
     return 0;
