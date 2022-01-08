@@ -45,11 +45,19 @@ void printSubMatrix(float **array, int startRowIdx, int rowsCount, int colsCount
 To use only for testing
 Prints out the matrix part that belongs to process. Uses sleep to plrint parts in order.
 **/
-void printResult(float **array, int rank, int rowsCount, int colsCount) {
+void printResult(float **array, int rank,int size, int rowsCount, int colsCount) {
     int startRowIdx = rank == 0 ? 0 : 1;
     int printedRowsCount = rank == size - 1 ? rowsCount : rowsCount - 1;
     sleep(rank);
-    printSubMatrix(matrix, startRowIdx, printedRowsCount, colsCount);
+    printSubMatrix(array, startRowIdx, printedRowsCount, colsCount);
+}
+
+/**
+To use for performance tests
+Pretty prints out the time
+**/
+void printTime(int processesCount, int simulationLength, int matrixSize, double calculationTime, double communicationTime) {
+    printf("number of poceses: %d \t simulation length: %d \t matrix size: %d \t calculations time: %.6f \t communication time:  %.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime);
 }
 
 /**
@@ -71,6 +79,14 @@ Each process has a full strip to make calculations, so number of columns is equa
 **/
 int getColsCount(int n) {
     return n;
+}
+
+double avg(double *array, int size) {
+    double accumulator = 0.0;
+    for(int i = 0; i < size; i++) {
+        accumulator += array[i];
+    }
+    return accumulator / size;
 }
 
 int main (int argc, char * argv[])
@@ -95,7 +111,7 @@ int main (int argc, char * argv[])
 
 
     double calculation_time_start, calculation_time_end, communication_time_start, communication_time_end;
-    double calculation_time, communication_time;
+    double calculation_time = 0.0, communication_time = 0.0;
 
     /**
     We have to make calculations on points like on a chessboard, once on dark and once on light fields. It is needed to
@@ -114,7 +130,9 @@ int main (int argc, char * argv[])
             }
         }
         calculation_time_end = MPI_Wtime();
+        calculation_time += calculation_time_end - calculation_time_start;
 
+        communication_time_start = MPI_Wtime();
         // We send data only to processes with ranks: rank - 1 and rank + 1
         if(rank > 0) {
             MPI_Send(matrix[1], colsCount, MPI_FLOAT, rank - 1, 1, MPI_COMM_WORLD);
@@ -130,9 +148,31 @@ int main (int argc, char * argv[])
         if(rank < size - 1) {
             MPI_Recv(matrix[rowsCount - 1], colsCount, MPI_FLOAT, rank + 1, 1, MPI_COMM_WORLD, &status);
         }
+        communication_time_end = MPI_Wtime();
+        communication_time == communication_time_end - communication_time_start;
     }
 
-    // printResult(matrix, rank, rowsCount, colsCount);
+    // printResult(matrix, rank, size, rowsCount, colsCount);
+    
+    // Gather times and count avg
+    double *calculation_times = NULL, *communication_times=NULL;
+    MPI_Status gather_status;
+
+    if (rank == 0) {
+        calculation_times = malloc(sizeof(double) * size);
+        communication_times = malloc(sizeof(double) * size);
+        calculation_times[0] = calculation_time;
+        communication_times[0] = communication_time;
+        for(int process_id = 1; process_id < size; process_id++) {
+            MPI_Recv(&calculation_times[process_id], 1, MPI_DOUBLE, process_id, 11, MPI_COMM_WORLD, &gather_status);
+            MPI_Recv(&communication_times[process_id], 1, MPI_DOUBLE, process_id, 22, MPI_COMM_WORLD, &gather_status);
+        }
+    } else {
+        MPI_Send(&calculation_time, 1, MPI_DOUBLE, 0, 11, MPI_COMM_WORLD);
+        MPI_Send(&communication_time, 1, MPI_DOUBLE, 0, 22, MPI_COMM_WORLD);
+    }
+
+    printTime(size, simulationLength, n, avg(calculation_times, size), avg(communication_times, size));
 
     MPI_Finalize();
     return 0;
