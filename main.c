@@ -58,9 +58,9 @@ Pretty prints out the time
 **/
 void printTime(int processesCount, int simulationLength, int matrixSize, double calculationTime, double communicationTime,bool verbose) {
   if(verbose){
-    printf("number of poceses: %d \t simulation length: %d \t matrix size: %d \t calculations time: %.6f \t communication time:  %.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime);
+    printf("number of poceses: %d \t simulation length: %d \t matrix size: %d \t calculations time: %.6f \t communication time:  %.6f\t total time:  %.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime,calculationTime+communicationTime);
   }else{
-    printf("%d\t%d\t%d\t%.6f\t%.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime);
+    printf("%d\t%d\t%d\t%.6f\t%.6f\t%.6f\n", processesCount, simulationLength, matrixSize, calculationTime, communicationTime,calculationTime+communicationTime);
   }
 }
 
@@ -95,14 +95,21 @@ double avg(double *array, int size) {
 
 int main (int argc, char * argv[])
 {
+    if(argc !=2){
+      printf("mpirun -n 2 singularity run singularity.sif /opt/main 1000\n");
+      exit(1);
+    }
+
     int rank, size;
 
     MPI_Init (&argc, &argv);                // starts MPI
     MPI_Comm_rank (MPI_COMM_WORLD, &rank);  // get current process id
-    MPI_Comm_size (MPI_COMM_WORLD, &size);  // get number of processes 
-
+    MPI_Comm_size (MPI_COMM_WORLD, &size);  // get number of processes
+    if (rank == 0) {
+      printf("size=%d\n", size);
+    }
     int a = 1;                  // size of a plate in meters
-    int n = 100;                  // size of the matrix describing the plate
+    int n = (int) strtol(argv[1], NULL, 10);   //100            // size of the matrix describing the plate
     int simulationLength = 300;
     double p = 10.0;            // constant from the formula
     double T = 10.0;            // constant from the formula
@@ -153,11 +160,11 @@ int main (int argc, char * argv[])
             MPI_Recv(matrix[rowsCount - 1], colsCount, MPI_FLOAT, rank + 1, 1, MPI_COMM_WORLD, &status);
         }
         communication_time_end = MPI_Wtime();
-        communication_time == communication_time_end - communication_time_start;
+        communication_time += communication_time_end - communication_time_start;
     }
 
     // printResult(matrix, rank, size, rowsCount, colsCount);
-    
+
     // Gather times and count avg
     double *calculation_times = NULL, *communication_times=NULL;
     MPI_Status gather_status;
