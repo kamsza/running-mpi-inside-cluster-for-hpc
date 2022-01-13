@@ -95,8 +95,9 @@ double avg(double *array, int size) {
 
 int main (int argc, char * argv[])
 {
-    if(argc !=2){
-      printf("mpirun -n 2 singularity run singularity.sif /opt/main 1000\n");
+    if(argc !=3){
+      printf("mpirun -n <numberOfThreads> singularity run singularity.sif /opt/main <sizeOfTheMatrix> <simulationLength>\n");
+      printf("mpirun -n 2 singularity run singularity.sif /opt/main 1000 300\n");
       exit(1);
     }
 
@@ -109,8 +110,8 @@ int main (int argc, char * argv[])
       printf("size=%d\n", size);
     }
     int a = 1;                  // size of a plate in meters
-    int n = (int) strtol(argv[1], NULL, 10);   //100            // size of the matrix describing the plate
-    int simulationLength = 300;
+    int n = (int) strtol(argv[1], NULL, 10);  // size of the matrix describing the plate
+    int simulationLength = (int) strtol(argv[2], NULL, 10);
     double p = 10.0;            // constant from the formula
     double T = 10.0;            // constant from the formula
     double k = (double)a/n;     // distance between points for which we measure values
