@@ -1,6 +1,6 @@
 # lsc-projekt
 
-## Sposób uruchomienia na Zeusie:
+## Sposób uruchomienia na Zeusie (bez Singularity, tylko MPI):
 ```
 srun -n=10 -p plgrid-testing -t 20:00 --pty /bin/bash
 
@@ -42,6 +42,6 @@ pcluster create lsc_cl                    // tworzenie klastra
 
 pcluster ssh lsc_cl -i <plik .pem z kluczem>        // łączenie się do klastra (user view)
 ```
-Następnie należy zainstalować SIngularity, roces jest przedstawiony w tym artykule: https://qywu.github.io/2020/12/09/aws-slumr-pytorch.html.
+Następnie należy zainstalować Singularity, roces jest przedstawiony w tym artykule: https://qywu.github.io/2020/12/09/aws-slumr-pytorch.html.
 
-Progeram napisany w MPI można uruchamiać identycznie jak na Promteuszu.
+Program napisany w MPI można uruchamiać identycznie jak na Promteuszu.
