@@ -2,11 +2,39 @@
 
 ## Sposób uruchomienia na Zeusie:
 ```
-srun -N 1 --cpus-per-task=2 -p plgrid-testing -t 20:00 --pty /bin/bash
+srun -n=10 -p plgrid-testing -t 20:00 --pty /bin/bash
 
 module add plgrid/tools/impi
 
 mpicc main.c -o main -lm
 
-mpiexec -np 1 ./main
+mpiexec -np 10 ./main
 ```
+
+## Sposób uruchomienia na Prometeuszu
+
+Prometeusz ma moduł z Singularity, który można załadować i wykorzystać. Przykłądowy skrypt jest wrzucony jako run_slurm.sh (należy zmienić odpowiednio parametry).
+```
+srun -n=10 -p plgrid-testing -t 20:00 --pty /bin/bash
+
+module add plgrid/tools/singularity/stable
+module add plgrid/tools/mpich
+
+mpicc main.c -o main -lm
+
+mpirun singularity exec singularity.sif /opt/main
+```
+
+## Sposób uruchomienia na AWSie
+
+Do uruchomienia na AWSie użyty został Parallel Cluster. Aby z niego korzystaćnależy pobrać i skonfiguurować [AWS CLI](https://aws.amazon.com/cli/) oraz [AWS ParallelCluster CLI](https://aws-parallelcluster.readthedocs.io/en/latest/getting_started.html). Nastpnie wyrać następujące komendy:
+```
+pclusteer configure                       // konfiguracja klastra: należy wybrć odpoiwedni region, typ maszyny, ilość węzłów oraz automatyczne tworzenie VPC
+
+pcluster create lsc_cl                    // tworzenie klastra
+
+pcluster ssh lsc_cl -i <plik .pem z kluczem>        // łączenie się do klastra (user view)
+```
+Następnie należy zainstalować SIngularity, roces jest przedstawiony w tym artykule: https://qywu.github.io/2020/12/09/aws-slumr-pytorch.html.
+
+Progeram napisany w MPI można uruchamiać identycznie jak na Promteuszu.
