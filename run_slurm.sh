@@ -6,7 +6,7 @@
 ## Maksymalny czas trwania zlecenia (format HH:MM:SS)
 #SBATCH --time=00:30:00
 ## Nazwa grantu do rozliczenia zużycia zasobów
-#SBATCH -A plgdais2
+#SBATCH -A <nazwa_grantu>
 ## Specyfikacja partycji
 #SBATCH --partition=plgrid-short
 ## Plik ze standardowym wyjściem
