@@ -11,6 +11,13 @@ mpicc main.c -o main -lm
 mpiexec -np 10 ./main
 ```
 
+## Sposób zbudowania obrazu
+
+W klatalogu znajduje się plik singularity.def. Aby zbudować z nego plik .sif, służący do uruchamiania kontenera należy użyć polecenia:
+```
+singularity build singularity.sif singularity.def
+```
+
 ## Sposób uruchomienia na Prometeuszu
 
 Prometeusz ma moduł z Singularity, który można załadować i wykorzystać. Przykłądowy skrypt jest wrzucony jako run_slurm.sh (należy zmienić odpowiednio parametry).
